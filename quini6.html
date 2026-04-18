@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quini 6 Verificador</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Azeret+Mono:wght@700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    min-height:100vh;
+    background:radial-gradient(ellipse at 50% 0%,#0d1e3a 0%,#040912 65%);
+    color:#e2e8f0;
+    font-family:'Outfit',system-ui,sans-serif;
+    padding:20px 14px 40px;
+  }
+  .wrap{max-width:480px;margin:0 auto}
+  .header{text-align:center;margin-bottom:20px}
+  .logo{
+    font-family:'Bebas Neue',sans-serif;font-size:50px;letter-spacing:10px;line-height:1;
+    background:linear-gradient(135deg,#fde68a,#d97706,#fbbf24);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  }
+  .sub{font-size:9px;color:#253968;letter-spacing:4px;margin-top:2px;font-weight:700}
+  .divider{width:80px;height:1px;margin:10px auto 0;background:linear-gradient(90deg,transparent,#1e3a6b,transparent)}
+  .tabs{display:flex;gap:3px;margin-bottom:10px;background:#060d1c;border-radius:11px;padding:4px;border:1px solid #0f1c36}
+  .tab{flex:1;padding:8px 2px;border-radius:8px;border:none;background:transparent;color:#253968;font-size:9px;font-weight:700;letter-spacing:0.5px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s}
+  .tab.active{background:#0d1a30;color:#818cf8}
+  .card{background:#080f1e;border:1px solid #121e36;border-radius:14px;padding:16px;margin-bottom:10px}
+  .lbl{font-size:9px;color:#253968;letter-spacing:3px;font-weight:700;margin-bottom:10px}
+  .slots{display:flex;gap:5px;justify-content:center;margin-bottom:13px;flex-wrap:wrap}
+  .grid{display:grid;grid-template-columns:repeat(8,1fr);gap:5px}
+  .ball{
+    width:42px;height:42px;border-radius:50%;
+    background:linear-gradient(145deg,#1a2744,#0f1c38);border:2px solid #1e3058;
+    color:#304878;font-size:13px;font-weight:800;
+    font-family:'Azeret Mono','Courier New',monospace;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+    transition:all .18s;outline:none;flex-shrink:0;
+  }
+  .ball.small{width:33px;height:33px;font-size:10px}
+  .ball.selected{background:linear-gradient(145deg,#3730a3,#1e1b6b);border-color:#818cf8;color:#c7d2fe;box-shadow:0 0 12px #6366f168}
+  .ball.match{background:linear-gradient(145deg,#14532d,#0c3a1f);border-color:#22c55e;color:#bbf7d0;box-shadow:0 0 14px #22c55e80}
+  .ball.drawn{background:linear-gradient(145deg,#0e1a2e,#0a1222);border-color:#1a2d4a;color:#2a3d5c;cursor:default}
+  .ball.empty{background:transparent;border-color:#111e35;color:#111e35;cursor:default}
+  .btn-row{display:flex;gap:8px;margin-top:12px;justify-content:flex-end}
+  .btn{padding:9px 16px;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:1px;border:none;cursor:pointer;font-family:'Outfit',sans-serif;transition:opacity .15s;background:#0c1730;color:#3b5280;border:1px solid #121e36}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn.primary{background:#312e81;color:#c7d2fe;border:none}
+  .btn.ghost{background:transparent;color:#253968;border:1px solid #121e36}
+  .btn.full{width:100%;margin-bottom:10px}
+  .mod-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+  .mod-label{font-size:9px;color:#1e3052;letter-spacing:2px;font-weight:700}
+  .mod-prize{font-size:10px;font-weight:700}
+  .mod-miss{font-size:10px;color:#1a2840}
+  .mod-hits-line{font-size:10px;color:#22c55e;margin-top:5px;font-family:'Azeret Mono',monospace;font-weight:700}
+  .balls-row{display:flex;gap:6px;flex-wrap:wrap}
+  .mod-block{margin-bottom:18px}
+  .progress-bar{background:#0a1020;border-radius:4px;height:6px;overflow:hidden;margin-top:8px}
+  .progress-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#3730a3,#818cf8);transition:width .3s}
+  .saved-row{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:9px;margin-bottom:6px;cursor:pointer;background:#0a1224;border:1px solid #121e36;transition:all .15s}
+  .saved-row.active{background:#0e1e3c;border-color:#3730a3}
+  .saved-date{font-size:9px;color:#253968;min-width:38px}
+  .saved-nums{display:flex;gap:4px;flex:1;flex-wrap:wrap}
+  .saved-num{font-family:'Azeret Mono',monospace;font-size:11px;font-weight:700;color:#3b5280;background:#0c1528;border-radius:4px;padding:2px 5px}
+  .saved-num.active{color:#818cf8;background:#1e1b6b}
+  .del-btn{background:none;border:none;color:#1e2d4a;cursor:pointer;font-size:18px;line-height:1}
+  .active-badge{font-size:9px;color:#6366f1;white-space:nowrap}
+  .error{background:#0f0508;border:1px solid #3b0a0a;border-radius:8px;padding:10px 14px;font-size:11px;color:#fca5a5;margin-top:8px}
+  .legend{display:flex;gap:20px;justify-content:center;padding-top:12px;border-top:1px solid #0f1c36}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:10px;color:#253968}
+  .loading-card{text-align:center;padding:32px}
+  .loading-icon{font-size:30px;margin-bottom:8px}
+  .loading-text{font-size:11px;color:#253968;letter-spacing:1px}
+  .hist-sorteo{margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #0f1c36}
+  .hist-sorteo:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+  .hist-header{display:flex;justify-content:space-between;margin-bottom:8px}
+  .hist-num{font-size:10px;color:#4a6fa5;font-weight:700}
+  .hist-date{font-size:10px;color:#253968}
+  .active-banner{padding:10px 14px}
+  .banner-balls{display:flex;gap:5px;flex-wrap:wrap}
+  .results-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  .panel{display:none}
+  .panel.active{display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="logo">QUINI 6</div>
+    <div class="sub">VERIFICADOR DE JUGADAS</div>
+    <div class="divider"></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('numeros')">🎯 NÚMEROS</button>
+    <button class="tab" onclick="switchTab('sorteo')">📋 SORTEO</button>
+    <button class="tab" onclick="switchTab('historial')">🗂 HISTORIAL</button>
+    <button class="tab" id="tab-guardadas" onclick="switchTab('guardadas')">💾 GUARDADAS</button>
+  </div>
+
+  <!-- NÚMEROS -->
+  <div id="panel-numeros" class="panel active">
+    <div class="card">
+      <div class="lbl">SELECCIONÁ TUS 6 NÚMEROS (00–45)</div>
+      <div class="slots" id="slots"></div>
+      <div class="grid" id="grid"></div>
+      <div class="btn-row">
+        <button class="btn ghost" onclick="clearNums()">✕ Limpiar</button>
+        <button class="btn" id="btn-save" onclick="savePlay()" disabled>💾 Guardar</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn primary" id="btn-go-sorteo" style="flex:1" onclick="switchTab('sorteo');fetchLastSorteo()">🔍 ÚLTIMO SORTEO</button>
+      <button class="btn" id="btn-go-hist" style="flex:1" onclick="switchTab('historial');checkHistory()">🗂 VER HISTORIAL</button>
+    </div>
+    <div id="nums-hint" style="font-size:10px;color:#253968;text-align:center;margin-top:6px"></div>
+  </div>
+
+  <!-- SORTEO -->
+  <div id="panel-sorteo" class="panel">
+    <div id="active-banner-sorteo"></div>
+    <button class="btn primary full" id="btn-fetch" onclick="fetchLastSorteo()">🔍 BUSCAR ÚLTIMO SORTEO</button>
+    <div id="sorteo-loading" style="display:none">
+      <div class="card loading-card">
+        <div class="loading-icon">🔍</div>
+        <div class="loading-text">CONSULTANDO QUINI-6-RESULTADOS.COM.AR...</div>
+      </div>
+    </div>
+    <div id="sorteo-results"></div>
+  </div>
+
+  <!-- HISTORIAL -->
+  <div id="panel-historial" class="panel">
+    <div id="active-banner-hist"></div>
+    <button class="btn primary full" id="btn-hist" onclick="checkHistory()">🗂 ANALIZAR ÚLTIMOS 3 MESES</button>
+    <div id="hist-loading" style="display:none">
+      <div class="card loading-card">
+        <div class="loading-icon">🗂</div>
+        <div class="loading-text">ANALIZANDO SORTEOS ANTERIORES...</div>
+        <div id="hist-prog-text" style="font-size:10px;color:#3b5280;margin-top:8px"></div>
+        <div class="progress-bar"><div class="progress-fill" id="hist-bar" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div id="hist-results"></div>
+  </div>
+
+  <!-- GUARDADAS -->
+  <div id="panel-guardadas" class="panel">
+    <div class="card">
+      <div class="lbl">JUGADAS GUARDADAS</div>
+      <div id="saved-list"></div>
+    </div>
+  </div>
+
+  <div class="error" id="error-box" style="display:none"></div>
+
+</div>
+<script>
+let myNums    = [];
+let saved     = JSON.parse(localStorage.getItem('quini_saved') || '[]');
+let activeIdx = null;
+let lastResults = null;
+const PICK  = 6;
+const TOTAL = 46;
+const BASE  = 'https://www.quini-6-resultados.com.ar';
+const MODS  = [
+  { key:'primera',  label:'TRADICIONAL · 1ª VUELTA' },
+  { key:'segunda',  label:'LA SEGUNDA' },
+  { key:'revancha', label:'REVANCHA' },
+  { key:'siempre',  label:'SIEMPRE SALE' },
+];
+const PRIZES = {
+  6:{label:'PRIMER PREMIO', color:'#fbbf24', emoji:'🏆'},
+  5:{label:'SEGUNDO PREMIO',color:'#94a3b8', emoji:'🥈'},
+  4:{label:'TERCER PREMIO', color:'#cd7f32', emoji:'🥉'},
+  3:{label:'CUARTO PREMIO', color:'#4ade80', emoji:'✅'},
+};
+const fmt = n => String(n).padStart(2,'0');
+const activeNums = () => activeIdx !== null ? saved[activeIdx].nums : myNums;
+
+async function fetchViaProxy(url) {
+  const proxies = [
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+    'https://corsproxy.io/?' + encodeURIComponent(url),
+  ];
+  for (const proxy of proxies) {
+    try {
+      const res = await fetch(proxy, {signal: AbortSignal.timeout(12000)});
+      if (res.ok) return await res.text();
+    } catch(e) {}
+  }
+  throw new Error('No se pudo conectar. Verificá tu conexión a internet.');
+}
+
+function extractSeqs(text) {
+  const re = /(\d{2})\s*-\s*(\d{2})\s*-\s*(\d{2})\s*-\s*(\d{2})\s*-\s*(\d{2})\s*-\s*(\d{2})/g;
+  const seqs = [];
+  let m;
+  while((m = re.exec(text)) !== null)
+    seqs.push([m[1],m[2],m[3],m[4],m[5],m[6]].map(Number));
+  return seqs;
+}
+
+function parsePage(text) {
+  const seqs = extractSeqs(text);
+  if (seqs.length < 4) return null;
+  const sorteoM = text.match(/Nro\.\s*Sorteo:\s*(\d+)/i) || text.match(/Sorteo\s+Nro\.\s*(\d+)/i);
+  const dateM   = text.match(/(\d{2})[\/\-](\d{2})[\/\-](\d{4})/);
+  return {
+    sorteo:  sorteoM ? parseInt(sorteoM[1]) : '—',
+    fecha:   dateM   ? `${dateM[1]}/${dateM[2]}/${dateM[3]}` : '—',
+    primera: seqs[0], segunda: seqs[1], revancha: seqs[2], siempre: seqs[3],
+  };
+}
+
+async function fetchLastSorteo() {
+  showError('');
+  document.getElementById('sorteo-loading').style.display = 'block';
+  document.getElementById('sorteo-results').innerHTML = '';
+  document.getElementById('btn-fetch').disabled = true;
+  renderActiveBanner('sorteo');
+  try {
+    const html = await fetchViaProxy(BASE + '/');
+    const doc  = new DOMParser().parseFromString(html,'text/html');
+    const data = parsePage(doc.body.textContent);
+    if (!data) throw new Error('No se encontraron los datos del sorteo.');
+    lastResults = data;
+    renderSorteoResults(data);
+    document.getElementById('btn-fetch').textContent = '↺ ACTUALIZAR SORTEO';
+  } catch(e) {
+    showError(e.message);
+  }
+  document.getElementById('sorteo-loading').style.display = 'none';
+  document.getElementById('btn-fetch').disabled = false;
+}
+
+async function checkHistory() {
+  if (activeNums().length !== PICK) { showError('Seleccioná 6 números primero.'); return; }
+  showError('');
+  renderActiveBanner('hist');
+  document.getElementById('hist-loading').style.display = 'block';
+  document.getElementById('hist-results').innerHTML = '';
+  document.getElementById('btn-hist').disabled = true;
+  try {
+    const listHtml = await fetchViaProxy(BASE + '/quini6/sorteos-anteriores.aspx');
+    const listDoc  = new DOMParser().parseFromString(listHtml,'text/html');
+    const links    = Array.from(listDoc.querySelectorAll('a[href*="sorteo-"]'))
+      .map(a => { const h = a.getAttribute('href'); return h && h.endsWith('.htm') ? (h.startsWith('http') ? h : BASE+h) : null; })
+      .filter(Boolean);
+    const unique = [...new Set(links)].reverse();
+    const found  = [];
+    const BATCH  = 4;
+    const nums   = activeNums();
+    for (let i = 0; i < unique.length; i += BATCH) {
+      const batch = unique.slice(i, i+BATCH);
+      const pages = await Promise.allSettled(batch.map(async url => {
+        const h = await fetchViaProxy(url);
+        const d = new DOMParser().parseFromString(h,'text/html');
+        return parsePage(d.body.textContent);
+      }));
+      for (const p of pages) {
+        if (p.status !== 'fulfilled' || !p.value) continue;
+        const s = p.value;
+        const modHits = MODS.map(m => ({
+          ...m, drawn: s[m.key]||[], hits: nums.filter(n=>(s[m.key]||[]).includes(n))
+        })).filter(m => m.hits.length >= 3);
+        if (modHits.length > 0) found.push({sorteo:s.sorteo, fecha:s.fecha, mods:modHits});
+      }
+      const done = Math.min(i+BATCH, unique.length);
+      document.getElementById('hist-prog-text').textContent = `${done} / ${unique.length} sorteos revisados`;
+      document.getElementById('hist-bar').style.width = `${(done/unique.length)*100}%`;
+    }
+    renderHistResults(found.sort((a,b)=>b.sorteo-a.sorteo));
+    document.getElementById('btn-hist').textContent = '↺ VOLVER A ANALIZAR';
+  } catch(e) {
+    showError(e.message);
+  }
+  document.getElementById('hist-loading').style.display = 'none';
+  document.getElementById('btn-hist').disabled = false;
+}
+
+function renderBall(n, state, small) {
+  return `<div class="ball${small?' small':''} ${state}">${state==='empty'?'·':fmt(n)}</div>`;
+}
+
+function renderModBlock(label, drawn, nums) {
+  if (!Array.isArray(drawn) || drawn.length !== PICK) return '';
+  const hits  = nums.filter(n => drawn.includes(n));
+  const prize = PRIZES[hits.length];
+  const header = prize
+    ? `<div class="mod-label">${label}</div><div class="mod-prize" style="color:${prize.color}">${prize.emoji} ${prize.label}</div>`
+    : `<div class="mod-label">${label}</div><div class="mod-miss">${hits.length} acierto${hits.length!==1?'s':''}</div>`;
+  const balls = drawn.map(n => renderBall(n, hits.includes(n)?'match':'drawn', false)).join('');
+  const hitsLine = hits.length > 0 ? `<div class="mod-hits-line">↳ ${hits.map(fmt).join('  ·  ')}</div>` : '';
+  return `<div class="mod-block">
+    <div class="mod-header">${header}</div>
+    <div class="balls-row">${balls}</div>
+    ${hitsLine}
+  </div>`;
+}
+
+function renderSorteoResults(data) {
+  const nums = activeNums();
+  const warn = nums.length !== PICK
+    ? `<div style="background:#0a1020;border:1px solid #1a2d50;border-radius:8px;padding:10px;margin-bottom:14px;font-size:11px;color:#3b5280">⚠ Seleccioná tu jugada en NÚMEROS para ver los aciertos.</div>`
+    : '';
+  const mods   = MODS.map(m => renderModBlock(m.label, data[m.key], nums)).join('');
+  const legend = `<div class="legend">
+    ${[['match','Tu acierto'],['drawn','No acertado']].map(([st,lb])=>`<div class="legend-item">${renderBall(7,st,true)}<span>${lb}</span></div>`).join('')}
+  </div>`;
+  document.getElementById('sorteo-results').innerHTML = `
+    <div class="card">
+      <div class="results-header">
+        <div class="lbl">SORTEO ${data.sorteo}</div>
+        <span style="font-size:11px;color:#3b5280">${data.fecha}</span>
+      </div>
+      ${warn}${mods}${legend}
+    </div>`;
+}
+
+function renderHistResults(found) {
+  if (found.length === 0) {
+    document.getElementById('hist-results').innerHTML = `
+      <div class="card" style="text-align:center;padding:24px">
+        <div style="font-size:24px;margin-bottom:8px">❌</div>
+        <div style="font-size:13px;color:#253968">Ningún sorteo con 3+ aciertos en los últimos 3 meses.</div>
+      </div>`;
+    return;
+  }
+  const nums  = activeNums();
+  const items = found.map(item => {
+    const modBlocks = item.mods.map(mod => renderModBlock(mod.label, mod.drawn, nums)).join('');
+    return `<div class="hist-sorteo">
+      <div class="hist-header">
+        <span class="hist-num">SORTEO ${item.sorteo}</span>
+        <span class="hist-date">${item.fecha}</span>
+      </div>
+      ${modBlocks}
+    </div>`;
+  }).join('');
+  document.getElementById('hist-results').innerHTML = `
+    <div class="card">
+      <div class="lbl">RESULTADOS DE LOS ÚLTIMOS 3 MESES</div>
+      <div style="font-size:11px;color:#3b5280;margin-bottom:12px">${found.length} sorteo${found.length!==1?'s':''} con 3 o más aciertos:</div>
+      ${items}
+    </div>`;
+}
+
+function renderActiveBanner(panel) {
+  const nums = activeNums();
+  if (nums.length !== PICK) { document.getElementById(`active-banner-${panel}`).innerHTML = ''; return; }
+  const label = activeIdx !== null ? `JUGADA GUARDADA · ${saved[activeIdx].date}` : 'JUGADA ACTIVA';
+  const balls = nums.map(n => renderBall(n,'selected',true)).join('');
+  document.getElementById(`active-banner-${panel}`).innerHTML = `
+    <div class="card active-banner">
+      <div class="lbl">${label}</div>
+      <div class="banner-balls">${balls}</div>
+    </div>`;
+}
+
+function renderSaved() {
+  const el  = document.getElementById('saved-list');
+  const tab = document.getElementById('tab-guardadas');
+  tab.textContent = `💾 GUARDADAS${saved.length ? ` (${saved.length})` : ''}`;
+  if (saved.length === 0) {
+    el.innerHTML = `<div style="text-align:center;color:#1e2d4a;padding:24px 0">
+      <div style="font-size:13px">Sin jugadas guardadas.</div>
+      <div style="font-size:11px;margin-top:4px;color:#1a2840">Elegí números y tocá 💾 Guardar.</div>
+    </div>`; return;
+  }
+  el.innerHTML = saved.map((play, i) => {
+    const isActive = activeIdx === i;
+    const nums  = play.nums.map(n => `<span class="saved-num${isActive?' active':''}">${fmt(n)}</span>`).join('');
+    const badge = isActive ? `<span class="active-badge">✓ activa</span>` : '';
+    return `<div class="saved-row${isActive?' active':''}" onclick="toggleActive(${i})">
+      <span class="saved-date">${play.date}</span>
+      <div class="saved-nums">${nums}</div>
+      ${badge}
+      <button class="del-btn" onclick="event.stopPropagation();deleteSaved(${i})">×</button>
+    </div>`;
+  }).join('');
+  if (activeIdx !== null)
+    el.innerHTML += `<div style="font-size:10px;color:#4f46e5;margin-top:8px;text-align:center">Jugada activa · usala en SORTEO o HISTORIAL</div>`;
+}
+
+function renderGrid() {
+  const grid  = document.getElementById('grid');
+  const slots = document.getElementById('slots');
+  slots.innerHTML = Array.from({length:PICK}).map((_,i) => {
+    const n = myNums[i];
+    return n !== undefined
+      ? `<div class="ball selected" onclick="toggleNum(${n})">${fmt(n)}</div>`
+      : `<div class="ball empty">·</div>`;
+  }).join('');
+  grid.innerHTML = Array.from({length:TOTAL}).map((_,i) => {
+    return `<div class="ball small${myNums.includes(i)?' selected':''}" onclick="toggleNum(${i})">${fmt(i)}</div>`;
+  }).join('');
+  const left = PICK - myNums.length;
+  document.getElementById('nums-hint').textContent = left > 0 ? `Faltan ${left} número${left!==1?'s':''}` : '';
+  document.getElementById('btn-save').disabled       = myNums.length !== PICK;
+  document.getElementById('btn-go-sorteo').disabled  = myNums.length !== PICK;
+  document.getElementById('btn-go-hist').disabled    = myNums.length !== PICK;
+}
+
+function toggleNum(n) {
+  if (myNums.includes(n)) myNums = myNums.filter(x => x !== n);
+  else if (myNums.length < PICK) myNums = [...myNums, n].sort((a,b)=>a-b);
+  renderGrid();
+}
+
+function clearNums() { myNums = []; renderGrid(); showError(''); }
+
+function savePlay() {
+  if (myNums.length !== PICK) return;
+  saved.push({nums:[...myNums], date: new Date().toLocaleDateString('es-AR')});
+  localStorage.setItem('quini_saved', JSON.stringify(saved));
+  renderSaved();
+}
+
+function deleteSaved(i) {
+  saved.splice(i,1);
+  if (activeIdx === i) activeIdx = null;
+  else if (activeIdx > i) activeIdx--;
+  localStorage.setItem('quini_saved', JSON.stringify(saved));
+  renderSaved();
+}
+
+function toggleActive(i) {
+  activeIdx = activeIdx === i ? null : i;
+  lastResults = null;
+  document.getElementById('sorteo-results').innerHTML = '';
+  document.getElementById('hist-results').innerHTML = '';
+  document.getElementById('btn-fetch').textContent = '🔍 BUSCAR ÚLTIMO SORTEO';
+  document.getElementById('btn-hist').textContent  = '🗂 ANALIZAR ÚLTIMOS 3 MESES';
+  renderSaved();
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t => {
+    if (t.getAttribute('onclick').includes("'"+name+"'")) t.classList.add('active');
+  });
+  showError('');
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-box');
+  if (msg) { el.textContent = '⚠ '+msg; el.style.display='block'; }
+  else el.style.display = 'none';
+}
+
+renderGrid();
+renderSaved();
+</script>
+</body>
+</html>
